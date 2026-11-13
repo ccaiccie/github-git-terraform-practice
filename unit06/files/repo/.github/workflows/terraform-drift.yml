@@ -1,0 +1,48 @@
+# Every morning: does the live network still match
+# main? Plan exit code 2 means drift: open an issue.
+name: terraform-drift
+
+on:
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+  issues: write
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Cloud login, short-lived (OIDC)
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.PLAN_ROLE_ARN }}
+          aws-region: eu-west-1
+
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_wrapper: false
+
+      - run: terraform init -input=false
+
+      - name: Plan with a detailed exit code
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          terraform plan -detailed-exitcode -no-color -input=false > plan.txt
+          code=$?
+          set -e
+          echo "plan exit code: $code"
+          if [ "$code" -eq 1 ]; then exit 1; fi
+          if [ "$code" -eq 2 ]; then
+            gh issue create --title "Drift detected" --body-file plan.txt
+          fi

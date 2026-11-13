@@ -1,0 +1,19 @@
+# .gitignore for a network-configs repository.
+# Git treats any path matching a pattern below
+# as invisible: it never shows as untracked, and
+# "git add ." cannot commit it by accident.
+
+# Secrets and credentials: never in history
+*.key
+*.pem
+secrets/
+.env
+
+# Device backups and troubleshooting captures
+backups/
+*.pcap
+
+# Editor and operating-system clutter
+*.swp
+.DS_Store
+Thumbs.db

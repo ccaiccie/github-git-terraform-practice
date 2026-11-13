@@ -1,0 +1,24 @@
+# GitLab version of the Unit 4 workflow: check
+# router configs in merge requests, and on main
+# after each merge.
+stages: [test, report]
+
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+default:
+  image: ubuntu:24.04
+
+validate:
+  stage: check
+  script:
+    - bash scripts/check-configs.sh configs
+
+report:
+  stage: report
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  script:
+    - grep -c '^vlan ' configs/*.cfg
