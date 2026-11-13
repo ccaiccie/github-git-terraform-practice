@@ -1,0 +1,12 @@
+# Example only, never run in this lab: plan
+# and apply with the OpenTofu CI/CD component
+# and GitLab-managed state.
+include:
+  - component: $CI_SERVER_FQDN/components/opentofu/validate-plan-apply@5.1.0
+    inputs:
+      version: 5.1.0
+      opentofu_version: 1.13.9
+      root_dir: tofu/
+      state_name: lab-network
+
+stages: [validate, build, deploy]

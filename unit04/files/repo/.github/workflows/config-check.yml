@@ -1,0 +1,25 @@
+# Checks router configs on pull requests to main,
+# and again on main after each merge.
+name: config-check
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get the files
+        uses: actions/checkout@v7
+
+      - name: Check router configs
+        run: bash scripts/check-configs.sh configs
+      - name: Config report
+        if: github.event_name == 'push'
+        run: grep -c '^vlan ' configs/*.cfg
